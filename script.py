@@ -112,3 +112,28 @@ def lstm_forward(x, a0, parameters):
     caches = (caches, x)
 
     return a, y, c, caches
+
+def rnn_cell_backward(da_next, cache):
+    """
+    Implements the backward pass for the RNN-cell (single time-step).
+
+    """
+
+    (a_next, a_prev, xt, parameters) = cache
+    Wax = parameters["Wax"]
+    Waa = parameters["Waa"]
+    Wya = parameters["Wya"]
+    ba = parameters["ba"]
+    by = parameters["by"]
+    
+    dz =  (1 - np.square(np.tanh(np.dot(Wax,xt)+np.dot(Waa,a_prev)+ba)))
+    dtanh= da_next * dz    
+    dxt = np.dot(Wax.T,dtanh)
+    dWax = np.dot(dtanh,xt.T)
+    da_prev = np.dot(Waa.T,dtanh)
+    dWaa = np.dot(dtanh,a_prev.T)
+    dba = np.sum(dtanh,axis=1,keepdims=True)
+
+    gradients = {"dxt": dxt, "da_prev": da_prev, "dWax": dWax, "dWaa": dWaa, "dba": dba}
+    
+    return gradients
